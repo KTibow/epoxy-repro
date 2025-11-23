@@ -16,15 +16,34 @@ export default async (url: string) => {
 
         ws.binaryType = "arraybuffer";
 
+        // These handlers are only for the initial connection
+        // They will be replaced once the connection is established
+        const onError = (err: Event) => {
+          reject(new Error(`WebSocket connection failed: ${err}`));
+        };
+
+        const onClose = (ev: CloseEvent) => {
+          reject(new Error(`WebSocket closed before connection: ${ev.code} ${ev.reason}`));
+        };
+
+        ws.onerror = onError;
+        ws.onclose = onClose;
+
         ws.onopen = () => {
+          // Clear the initial error handlers now that we're connected
+          ws.onerror = null;
+          ws.onclose = null;
           const readable = new ReadableStream({
             start(controller) {
               ws.onmessage = (event) => {
-                let data = event.data;
-
-                controller.enqueue(data);
+                controller.enqueue(event.data);
               };
-              ws.onclose = () => controller.close();
+              ws.onerror = (err) => {
+                controller.error(err);
+              };
+              ws.onclose = () => {
+                controller.close();
+              };
             },
             cancel() {
               ws.close();
@@ -33,9 +52,16 @@ export default async (url: string) => {
 
           const writable = new WritableStream({
             write(chunk) {
-              if (ws.readyState == WebSocket.OPEN) {
-                // chunk is Uint8Array from Epoxy, ws.send handles it fine
+              // WritableStream write() can return a Promise for backpressure
+              // We need to handle the case where WebSocket might not be ready
+              if (ws.readyState !== WebSocket.OPEN) {
+                throw new Error(`WebSocket not open (state: ${ws.readyState})`);
+              }
+
+              try {
                 ws.send(chunk);
+              } catch (err) {
+                throw new Error(`WebSocket send failed: ${err}`);
               }
             },
             close() {
@@ -44,11 +70,6 @@ export default async (url: string) => {
           });
 
           resolve({ read: readable, write: writable });
-        };
-
-        ws.onclose = (ev) => {
-          console.error("WebSocket close:", ev);
-          reject(ev);
         };
       }),
     options,
