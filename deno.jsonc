@@ -5,4 +5,5 @@
   "imports": {
     "@mercuryworkshop/epoxy-tls": "npm:@mercuryworkshop/epoxy-tls@^2.1.18-1",
   },
+  "nodeModulesDir": "auto",
 }
