@@ -33,10 +33,7 @@ export default async (url: string) => {
 
           const writable = new WritableStream({
             write(chunk) {
-              if (ws.readyState == WebSocket.OPEN) {
-                // chunk is Uint8Array from Epoxy, ws.send handles it fine
-                ws.send(chunk);
-              }
+              ws.send(chunk);
             },
             close() {
               ws.close();
