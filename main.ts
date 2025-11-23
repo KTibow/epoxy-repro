@@ -1,7 +1,7 @@
-// import makeEpoxyDirect from "./make-epoxy-direct.ts";
-import makeEpoxyReadwrite from "./make-epoxy-readwrite.ts";
+// import makeEpoxy from "./make-epoxy-direct.ts";
+import makeEpoxy from "./make-epoxy-readwrite.ts";
 
-const epoxy = await makeEpoxyReadwrite("wss://wisp.mercurywork.shop");
+const epoxy = await makeEpoxy("wss://wisp.mercurywork.shop");
 const urls = Array.from(
   { length: 5 },
   () => `https://example.com/${Math.random()}`,
