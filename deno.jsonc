@@ -1,0 +1,8 @@
+{
+  "tasks": {
+    "start": "deno run --allow-all npm:rolldown main.ts | deno run --allow-all -",
+  },
+  "imports": {
+    "@mercuryworkshop/epoxy-tls": "npm:@mercuryworkshop/epoxy-tls@^2.1.18-1",
+  },
+}
